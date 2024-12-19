@@ -9,12 +9,8 @@ def clean_data(df):
     mean_std = df.groupby(['city', 'season'])['temperature'].agg(['mean', 'std']).reset_index()
     df = df.merge(mean_std, on=['city', 'season'])
 
-    upper_bound = df['mean'] + 2 * df['std']
-    lower_bound = df['mean'] - 2 * df['std']
-
-    df['is_outlier_2s'] = Parallel(n_jobs=-1)(
-        delayed(compute_outliers_2s)(temp, upper_bound.iloc[0], lower_bound.iloc[0]) for temp in df['temperature']
-    )
+    df['is_outlier_2s'] = (df['temperature'] > (df['mean'] + 2 * df['std'])) | \
+                (df['temperature'] < (df['mean'] - 2 * df['std']))
 
     return df
 
